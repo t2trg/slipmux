@@ -33,13 +33,15 @@ About This Document
 
    This note is to be removed before publishing as an RFC.
 
+   The latest revision of this draft can be found at
+   https://t2trg.github.io/slipmux/draft-bormann-t2trg-slipmux.html.
    Status information for this document may be found at
    https://datatracker.ietf.org/doc/draft-bormann-t2trg-slipmux/.
 
-   Discussion of this document takes place on the T2TRG Research Group
-   mailing list (mailto:t2trg@irtf.org), which is archived at
-   https://mailarchive.ietf.org/arch/browse/t2trg/.  Subscribe at
-   https://www.ietf.org/mailman/listinfo/t2trg/.
+   Discussion of this document takes place on the Thing-to-Thing
+   Research Group mailing list (mailto:t2trg@irtf.org), which is
+   archived at https://mailarchive.ietf.org/arch/browse/t2trg.
+   Subscribe at https://www.ietf.org/mailman/listinfo/t2trg/.
 
    Source for this draft and an issue tracker can be found at
    https://github.com/t2trg/slipmux.
@@ -48,6 +50,13 @@ Status of This Memo
 
    This Internet-Draft is submitted in full conformance with the
    provisions of BCP 78 and BCP 79.
+
+
+
+Bormann & Kaupat          Expires 12 June 2026                  [Page 1]
+
+Internet-Draft                UART slipmux                 December 2025
+
 
    Internet-Drafts are working documents of the Internet Engineering
    Task Force (IETF).  Note that other groups may also distribute
@@ -74,26 +83,36 @@ Copyright Notice
 
 Table of Contents
 
-   1.  Introduction
-     1.1.  Terminology
-   2.  Using a UART interface
-   3.  Packet Transfer
-   4.  Diagnostics Transfer
-   5.  Configuration
-   6.  Framing considerations
-   7.  Discussion
-     7.1.  Why no shell?
-     7.2.  Frame aborts
-     7.3.  Unknown initial bytes
-   8.  IANA Considerations
-   9.  Security Considerations
-   10. References
-     10.1.  Normative References
-     10.2.  Informative References
-   Appendix A.  Implementation Status
-     A.1.  Lobaro SLIP
-   Acknowledgements
-   Authors' Addresses
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
+     1.1.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   3
+   2.  Using a UART interface  . . . . . . . . . . . . . . . . . . .   3
+   3.  Packet Transfer . . . . . . . . . . . . . . . . . . . . . . .   4
+   4.  Diagnostics Transfer  . . . . . . . . . . . . . . . . . . . .   4
+   5.  Configuration . . . . . . . . . . . . . . . . . . . . . . . .   5
+   6.  Framing considerations  . . . . . . . . . . . . . . . . . . .   6
+   7.  Discussion  . . . . . . . . . . . . . . . . . . . . . . . . .   6
+     7.1.  Why no shell? . . . . . . . . . . . . . . . . . . . . . .   6
+     7.2.  Frame aborts  . . . . . . . . . . . . . . . . . . . . . .   7
+     7.3.  Unknown initial bytes . . . . . . . . . . . . . . . . . .   7
+   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
+   9.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
+   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .   8
+     10.1.  Normative References . . . . . . . . . . . . . . . . . .   8
+     10.2.  Informative References . . . . . . . . . . . . . . . . .   9
+   Appendix A.  Implementation Status  . . . . . . . . . . . . . . .  10
+     A.1.  Lobaro SLIP . . . . . . . . . . . . . . . . . . . . . . .  10
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  10
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  11
+
+
+
+
+
+
+Bormann & Kaupat          Expires 12 June 2026                  [Page 2]
+
+Internet-Draft                UART slipmux                 December 2025
+
 
 1.  Introduction
 
@@ -140,6 +159,16 @@ Table of Contents
    bit/s is used.  As with the logic levels, alternative arrangements
    are possible, but a 3.3 V CMOS, 115200 bit/s interface is most likely
    to provide the best interoperability.
+
+
+
+
+
+
+Bormann & Kaupat          Expires 12 June 2026                  [Page 3]
+
+Internet-Draft                UART slipmux                 December 2025
+
 
    While it would be possible to run relatively complex and versatile
    protocols such as PPP [RFC1661] on such serial interfaces, this goes
@@ -188,6 +217,15 @@ Table of Contents
    there is no need to actually perform escaping on the diagnostic
    message.
 
+
+
+
+
+Bormann & Kaupat          Expires 12 June 2026                  [Page 4]
+
+Internet-Draft                UART slipmux                 December 2025
+
+
    Since diagnostic messages are intended for humans, they are only
    defined for the direction from platform to host (e.g., laptop); for
    robustness when connecting two platform modules, they should be
@@ -230,6 +268,19 @@ Table of Contents
    resources that research or maker platforms might want to provide,
    e.g. to cover the configuration and status checking often done by "AT
    commands" today.
+
+
+
+
+
+
+
+
+
+Bormann & Kaupat          Expires 12 June 2026                  [Page 5]
+
+Internet-Draft                UART slipmux                 December 2025
+
 
 6.  Framing considerations
 
@@ -274,6 +325,18 @@ Table of Contents
    Often code that was designed to format the data for human consumption
    can be simplified to just ship the raw data, e.g. in a CBOR data item
    [STD94].
+
+
+
+
+
+
+
+
+Bormann & Kaupat          Expires 12 June 2026                  [Page 6]
+
+Internet-Draft                UART slipmux                 December 2025
+
 
 7.2.  Frame aborts
 
@@ -323,6 +386,14 @@ Table of Contents
    but as a matter of precaution, this section might define a registry
    for initial bytes in a frame.  At this point, this would contain:
 
+
+
+
+Bormann & Kaupat          Expires 12 June 2026                  [Page 7]
+
+Internet-Draft                UART slipmux                 December 2025
+
+
    *  0x0a: Diagnostics
 
    *  0x45 to 0x4f: IPv4 packet
@@ -371,6 +442,14 @@ Table of Contents
 
    [BCP14]    Best Current Practice 14,
               <https://www.rfc-editor.org/info/bcp14>.
+
+
+
+Bormann & Kaupat          Expires 12 June 2026                  [Page 8]
+
+Internet-Draft                UART slipmux                 December 2025
+
+
               At the time of writing, this BCP comprises the following:
 
               Bradner, S., "Key words for use in RFCs to Indicate
@@ -420,6 +499,13 @@ Table of Contents
               <https://www.rfc-editor.org/info/std94>.
               At the time of writing, this STD comprises the following:
 
+
+
+Bormann & Kaupat          Expires 12 June 2026                  [Page 9]
+
+Internet-Draft                UART slipmux                 December 2025
+
+
               Bormann, C. and P. Hoffman, "Concise Binary Object
               Representation (CBOR)", STD 94, RFC 8949,
               DOI 10.17487/RFC8949, December 2020,
@@ -467,6 +553,15 @@ Acknowledgements
 
    TBD
 
+
+
+
+
+Bormann & Kaupat          Expires 12 June 2026                 [Page 10]
+
+Internet-Draft                UART slipmux                 December 2025
+
+
 Authors' Addresses
 
    Carsten Bormann
@@ -485,3 +580,37 @@ Authors' Addresses
    Germany
    Phone: +49-40-22816531-0
    Email: tobias.kaupat@lobaro.de
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bormann & Kaupat          Expires 12 June 2026                 [Page 11]
