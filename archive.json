@@ -1,0 +1,71 @@
+{
+  "magic": "E!vIA5L86J2I",
+  "timestamp": "2025-12-11T01:00:02.862288+00:00",
+  "repo": "t2trg/slipmux",
+  "labels": [
+    {
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "documentation",
+      "description": "Improvements or additions to documentation",
+      "color": "0075ca"
+    },
+    {
+      "name": "duplicate",
+      "description": "This issue or pull request already exists",
+      "color": "cfd3d7"
+    },
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "good first issue",
+      "description": "Good for newcomers",
+      "color": "7057ff"
+    },
+    {
+      "name": "help wanted",
+      "description": "Extra attention is needed",
+      "color": "008672"
+    },
+    {
+      "name": "invalid",
+      "description": "This doesn't seem right",
+      "color": "e4e669"
+    },
+    {
+      "name": "question",
+      "description": "Further information is requested",
+      "color": "d876e3"
+    },
+    {
+      "name": "wontfix",
+      "description": "This will not be worked on",
+      "color": "ffffff"
+    }
+  ],
+  "issues": [
+    {
+      "number": 1,
+      "id": "I_kwDOQlcQd87dazoI",
+      "title": "Mention flow control and buffering",
+      "url": "https://github.com/t2trg/slipmux/issues/1",
+      "state": "OPEN",
+      "author": "chrysn",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [],
+      "body": "I though this would be easy to address in <https://mailarchive.ietf.org/arch/msg/t2trg/7b91fiM_1628Jcxb0OVcuNoZf5w>; quoting myself from there:\n\n> One thing I discovered (from Wikipedia[3] and Keil docs[4]; RFC1055 is\nsilent on the topic, and so is the draft) is that it really only works\nwell with hardware flow control enabled.\n>\n> In RIOT OS and Ariel OS, I work with many systems that have serial\nconnectivity to the host through dedicated chips or just on-board\ndebuggers (besides those that have own USB stack, but on those I'd\nrather use USB Ethernet), and contrary to my expectations of quality, a\ngreat many don't have the flow control pins wired (even though hardware\nsupport for them is generally good these days); sampling Ariel OS\nboards[5] by group, no flow control was found in the BBC micro:bit,\nESP32-C6-DevKitC-1 and the ST NUCLEO-C031C6, whereas the nRF9151-DK does\nhave RTS/CTS wired.\n>\n> I don't have a strong opinion on whether this document should have\nnormative statements on flow control, but something like this would have\nhelped me as an imlementer:\n>\n> > As SLIP is preferably used with hardware flow control (RTS/CTS or\n> CLOCAL), and has no provisions for escaping software flow control,\n> implementations on devices without available hardware flow control\n> need to keep up with receiving data at line speed with sufficient\n> buffering to receive at least a full single transfer (eg. a minimal\n> MTU sized IPv6 packet plus any escape overhead), rather than relying\n> on the peer to transmit with interruptions or to just transmit small\n> messages. For configuration messages, implementers can get away with a\n> smaller buffer, but then need to ensure that they can process enough\n> of an incompletely received message to send a 4.13 Request Entity Too\n> Large with an appropriate Size1 option.\n>\n> (Or leaving the \"For configuration messages\" out -- I know I have a\ntendency to insert provisions for optimizations that might distract more\nthan help.)\n\nHaving started to write that into a PR, along with very simplistic tests, I found this to be more complex. I still think that the issue should be addressed, but now it's more a matter of whether things are operating in a buffered or cut-through mode, and then an implementation that should work under stress without hardware flow control needs to go through some yet unknown decision tree that involves whether or not all upper-layer protocols are adequately flow-controlled on their own to never saturate the link, whether the device is actually buffering anything at all (I expect most of usage to be store-and-forward, but cut-through processing might be feasible too in some cases, like in CoAP w/o security, or when forwarding traffic), and whether decoding happens at line speed into a decoded buffer (then the decoder can skip ahead if the buffer is unavailable) or whether undecoded data is stored (in which case the ability to store an MTU under any conditions effectively means it can store around 1.9x of an average packet, which may lead to acceptable recovery of almost as many frames as can be processed at decoding speed when that is below line speed, where every time after processing, the decoder has to look for a start again).",
+      "createdAt": "2025-12-10T11:28:22Z",
+      "updatedAt": "2025-12-10T11:28:36Z",
+      "closedAt": null,
+      "comments": []
+    }
+  ],
+  "pulls": []
+}
