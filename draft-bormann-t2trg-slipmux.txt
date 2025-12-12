@@ -5,8 +5,8 @@
 Network Working Group                                         C. Bormann
 Internet-Draft                                    Universität Bremen TZI
 Intended status: Informational                                 T. Kaupat
-Expires: 12 June 2026                                          Lobaro UG
-                                                         9 December 2025
+Expires: 15 June 2026                                          Lobaro UG
+                                                        12 December 2025
 
 
   Slipmux: Using an UART interface for diagnostics, configuration, and
@@ -53,7 +53,7 @@ Status of This Memo
 
 
 
-Bormann & Kaupat          Expires 12 June 2026                  [Page 1]
+Bormann & Kaupat          Expires 15 June 2026                  [Page 1]
 
 Internet-Draft                UART slipmux                 December 2025
 
@@ -68,7 +68,7 @@ Internet-Draft                UART slipmux                 December 2025
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 12 June 2026.
+   This Internet-Draft will expire on 15 June 2026.
 
 Copyright Notice
 
@@ -101,15 +101,15 @@ Table of Contents
      10.2.  Informative References . . . . . . . . . . . . . . . . .   9
    Appendix A.  Implementation Status  . . . . . . . . . . . . . . .  10
      A.1.  Lobaro SLIP . . . . . . . . . . . . . . . . . . . . . . .  10
-   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  10
+     A.2.  aiocoap . . . . . . . . . . . . . . . . . . . . . . . . .  11
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  11
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  11
 
 
 
 
 
-
-Bormann & Kaupat          Expires 12 June 2026                  [Page 2]
+Bormann & Kaupat          Expires 15 June 2026                  [Page 2]
 
 Internet-Draft                UART slipmux                 December 2025
 
@@ -165,7 +165,7 @@ Internet-Draft                UART slipmux                 December 2025
 
 
 
-Bormann & Kaupat          Expires 12 June 2026                  [Page 3]
+Bormann & Kaupat          Expires 15 June 2026                  [Page 3]
 
 Internet-Draft                UART slipmux                 December 2025
 
@@ -221,7 +221,7 @@ Internet-Draft                UART slipmux                 December 2025
 
 
 
-Bormann & Kaupat          Expires 12 June 2026                  [Page 4]
+Bormann & Kaupat          Expires 15 June 2026                  [Page 4]
 
 Internet-Draft                UART slipmux                 December 2025
 
@@ -277,7 +277,7 @@ Internet-Draft                UART slipmux                 December 2025
 
 
 
-Bormann & Kaupat          Expires 12 June 2026                  [Page 5]
+Bormann & Kaupat          Expires 15 June 2026                  [Page 5]
 
 Internet-Draft                UART slipmux                 December 2025
 
@@ -333,7 +333,7 @@ Internet-Draft                UART slipmux                 December 2025
 
 
 
-Bormann & Kaupat          Expires 12 June 2026                  [Page 6]
+Bormann & Kaupat          Expires 15 June 2026                  [Page 6]
 
 Internet-Draft                UART slipmux                 December 2025
 
@@ -389,7 +389,7 @@ Internet-Draft                UART slipmux                 December 2025
 
 
 
-Bormann & Kaupat          Expires 12 June 2026                  [Page 7]
+Bormann & Kaupat          Expires 15 June 2026                  [Page 7]
 
 Internet-Draft                UART slipmux                 December 2025
 
@@ -445,7 +445,7 @@ Internet-Draft                UART slipmux                 December 2025
 
 
 
-Bormann & Kaupat          Expires 12 June 2026                  [Page 8]
+Bormann & Kaupat          Expires 15 June 2026                  [Page 8]
 
 Internet-Draft                UART slipmux                 December 2025
 
@@ -485,10 +485,26 @@ Internet-Draft                UART slipmux                 December 2025
               Framing", RFC 2687, DOI 10.17487/RFC2687, September 1999,
               <https://www.rfc-editor.org/rfc/rfc2687>.
 
+   [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
+              Resource Identifier (URI): Generic Syntax", STD 66,
+              RFC 3986, DOI 10.17487/RFC3986, January 2005,
+              <https://www.rfc-editor.org/rfc/rfc3986>.
+
    [RFC7942]  Sheffer, Y. and A. Farrel, "Improving Awareness of Running
               Code: The Implementation Status Section", BCP 205,
               RFC 7942, DOI 10.17487/RFC7942, July 2016,
               <https://www.rfc-editor.org/rfc/rfc7942>.
+
+
+
+
+
+
+
+Bormann & Kaupat          Expires 15 June 2026                  [Page 9]
+
+Internet-Draft                UART slipmux                 December 2025
+
 
    [RFC8613]  Selander, G., Mattsson, J., Palombini, F., and L. Seitz,
               "Object Security for Constrained RESTful Environments
@@ -498,13 +514,6 @@ Internet-Draft                UART slipmux                 December 2025
    [STD94]    Internet Standard 94,
               <https://www.rfc-editor.org/info/std94>.
               At the time of writing, this STD comprises the following:
-
-
-
-Bormann & Kaupat          Expires 12 June 2026                  [Page 9]
-
-Internet-Draft                UART slipmux                 December 2025
-
 
               Bormann, C. and P. Hoffman, "Concise Binary Object
               Representation (CBOR)", STD 94, RFC 8949,
@@ -546,21 +555,38 @@ A.1.  Lobaro SLIP
    A work in progress implementation of slipmux is available as part of
    Lobaro's SLIP implementation (MIT License, Go language):
 
+
+
+Bormann & Kaupat          Expires 15 June 2026                 [Page 10]
+
+Internet-Draft                UART slipmux                 December 2025
+
+
                     https://github.com/Lobaro/slip
                     https://github.com/Lobaro/util-slip
+
+A.2.  aiocoap
+
+   A work in progress implementation of slipmux is a vailable as part of
+   the aiocoap library (MIT License, Python language, for capable
+   systems):
+
+   https://codeberg.org/aiocoap/aiocoap/pulls/52
+   (https://codeberg.org/aiocoap/aiocoap/pulls/52)
+
+   Implementation was generally straightforward, thanks to reusing the
+   precise [RFC7252] format.  Minor problem points were obtaining test
+   vectors for FCS calculation (interoperating with the earlier Rust
+   implementation by Bennet Hattesen helped), tolerating the lowercasing
+   normalization of the device name that comes from Section 6.2.2.1 of
+   [RFC3986], and overriding the library's defaults on when to send the
+   Uri-Host option.  Troubles around binding servers to serial ports
+   stem from the general library's shortcomings and not from this
+   specification.
 
 Acknowledgements
 
    TBD
-
-
-
-
-
-Bormann & Kaupat          Expires 12 June 2026                 [Page 10]
-
-Internet-Draft                UART slipmux                 December 2025
-
 
 Authors' Addresses
 
@@ -587,30 +613,4 @@ Authors' Addresses
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bormann & Kaupat          Expires 12 June 2026                 [Page 11]
+Bormann & Kaupat          Expires 15 June 2026                 [Page 11]
