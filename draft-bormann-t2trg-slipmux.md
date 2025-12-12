@@ -299,6 +299,60 @@ implementation, this also can be used for liveness testing.
 (The check for the first byte of the CoAP message is needed to avoid endless back and
 forth of reset messages in certain error situations.)
 
+## Buffering and flow control
+
+SLIP is preferably used with hardware flow control (RTS/CTS or CLOCAL),
+and has no provisions for escaping software flow control.
+Using hardware flow control is the preferred mode of operation with Slipmux;
+however, it is not available on all devices where deploying Slipmux is desirable.
+
+Implementations running on devices without flow control,
+or those that aim to be connectable to such devices,
+need to require at least one of three properties of the system they are deployed in:
+
+* The processing of incoming bytes is generally fast enough to handle messages at line speed, including the scanning for a new frame start.
+
+* Data of all frame types adheres is guaranteed to adhere to congestion control best practice.
+
+* Sufficient input ring buffers (or larger linear buffers) are available for almost twice the maximum escaped frame size agreed on on the link.
+
+<!-- The ability to make the hardware stop filling the buffer after an overflow condition until the buffer is free *and* a first END byte has been seen would work too, but that sound highly exotic, and any hardware programmable enough to do this might easily also be programmable to do the full frame decoding. -->
+
+Even when upholding those or similar / equivalent properties, they may experience packet loss,
+but they will retain the capacity to process data commensurate to their processing speed when faced with arbitrary network traffic.
+Consequences of not upholding any of these are that even with the capacity to process a frame at a speed slightly below line speed,
+when data is sent at line speed that consist mainly of escaped bytes
+(as can be the case with raw sensor readings),
+the amount of processed frames drops to a fraction of the processing speed.
+
+<!-- Elaborating is probably excessive for publication, but for review: Assume buffer is about 110% of escaped MTU, processing speed about 90% of rate, and data is maximally escaped. Data starts, processing is catching up. By the time it reaches the END and finishes the frame, a few bytes have overflown, and the rest of the data starts filling up the recently empty buffer. The receiver processes this frame that has lost a few bytes near its start, and the process continues until the point of having lost bytes wraps around and after having lost some 5-9 messages, rather than just losing 1 in 10 as would be commensurate with the processing speed. -->
+
+\[ Alternative A: \]
+
+To participate in MTU discovery,
+an implementation needs to understand its maximum unescaped frame sizes,
+and should generally limit processing to that size to avoid confusing congestion control mechanisms.
+
+Participating in congestion control may require processing incomplete frames
+(when the transmitter exceeded the MTU, and possibly a buffer).
+This way, the receiver can obtain enough data to send an ICMPv6 error or a CoAP 4.13 Request Entity Too Large response.
+
+\[ Alternative B: \]
+
+To avoid requirements on the processing of incomplete frames
+(as would be needed to accommodate dynamic link MTU),
+slipmux operates on a configured MTU of 1280 unescped bytes including the frame start;
+this is exactly the IPv6 MTU, and gives a maximum size of 1279 byte for control messages.
+
+Note that a CoAP server may lower the client's message size using the 4.13 Request Entity Too Large response with a Size1 value,
+as described in {{Section 5.9.2.9 fo RFC7252}}.
+This way, an implementation without IP support and with a CoAP server that uses a buffer which is smaller than the MTU can run interoperably,
+as long as the first part of a control frame can be processed.
+
+This specification provides no means of negotiating any different size;
+peers may agree on larger sizes out of band or through yet to be defined control messages.
+
+
 IANA Considerations
 ============
 
