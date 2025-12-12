@@ -370,6 +370,21 @@ https://github.com/Lobaro/util-slip
 ~~~
 {: artwork-align="center"}
 
+## aiocoap
+
+A work in progress implementation of slipmux is a vailable as part of
+the aiocoap library (MIT License, Python language, for capable systems):
+
+<https://codeberg.org/aiocoap/aiocoap/pulls/52>
+
+Implementation was generally straightforward,
+thanks to reusing the precise {{RFC7252}} format.
+Minor problem points were obtaining test vectors for FCS calculation
+(interoperating with the earlier Rust implementation by Bennet Hattesen helped),
+tolerating the lowercasing normalization of the device name that comes from {{Section 6.2.2.1 of ?RFC3986}},
+and overriding the library's defaults on when to send the Uri-Host option.
+Troubles around binding servers to serial ports stem from the general library's shortcomings and not from this specification.
+
 Acknowledgements
 ================
 {: unnumbered}
