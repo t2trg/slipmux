@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-12-11T01:00:02.862288+00:00",
+  "timestamp": "2025-12-14T01:03:58.772104+00:00",
   "repo": "t2trg/slipmux",
   "labels": [
     {
@@ -65,7 +65,235 @@
       "updatedAt": "2025-12-10T11:28:36Z",
       "closedAt": null,
       "comments": []
+    },
+    {
+      "number": 4,
+      "id": "I_kwDOQlcQd87d8aHW",
+      "title": "\"Configuration\" -> \"CoAP\"",
+      "url": "https://github.com/t2trg/slipmux/issues/4",
+      "state": "OPEN",
+      "author": "chrysn",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [],
+      "body": "I think that the term \"Configuration\" is not too helpful for naming the frames. Yes, configuring the peer over CoAP is *some* thing CoAP-over-SLIP can do (esp. when working with legacy IP that needs IP addresses set up before you can talk), but I think it's just one of many points.\n\nThe document would read more easily if Configuration Frames were just called CoAP frames.",
+      "createdAt": "2025-12-12T14:21:59Z",
+      "updatedAt": "2025-12-12T14:21:59Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 5,
+      "id": "I_kwDOQlcQd87d8ton",
+      "title": "Applicability to multi-partcipant buses?",
+      "url": "https://github.com/t2trg/slipmux/issues/5",
+      "state": "OPEN",
+      "author": "chrysn",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [],
+      "body": "In serial communication, a popular bus is RS485, which is a half-duplex shared bus that often looks like any other serial connection.\n\nI think that doing this is, to some extent, feasible, and practical in some situations; whether it is worth adding to this document is unsure (so let's discuss here).\n\nThere is a simple case that I think works particularly well: If\n\n* most of the traffic is CoAP (probably impractical for IP, but maybe get some diagnostic output, especially around errors), and\n* there is only one client, and\n* the servers always use piggy-backed responses and no non-traditional responses such as observation\n\nthen the system would be largely free of collisions, especially if there is a bit tighter agreement on how long after a request it is permissible to send a response, and could already be used with current implementations. All the client needs to do is send CONs and leave NSTART=1.\n\nServers could distinguish whether a request is for them or not by looking at a Uri-Host option, and even group messages where some Uri-Host value serves as a group name is doable thanks to Leisure.\n\nSetups with non-traditional or separate responses would need to either \"just\" use little enough traffic that collisions are not an issue, or might involve some polling: The single client knows which servers it is expecting responses (of either kind) from, and can poll it. Sadly, a CoAP ping is not *quite* sufficient because it can't carry Uri-Host, but maybe a Signaling message would do (maybe that Ping, and similar to Custody, a pong can say \"I'm here and will still send something\", or \"I'm here and I've said everything\", or just a CON message that is just pending).\n\nIf the coordinator regularly polls all participants, they can even become clients, but at that point, things get complex, and this should be simple -- at some point it's probably better to just run 6lobac (RFC8163).",
+      "createdAt": "2025-12-12T14:46:43Z",
+      "updatedAt": "2025-12-12T14:46:49Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
-  "pulls": []
+  "pulls": [
+    {
+      "number": 2,
+      "id": "PR_kwDOQlcQd864iEnA",
+      "title": "Add considerations for flow control and buffering",
+      "url": "https://github.com/t2trg/slipmux/pull/2",
+      "state": "OPEN",
+      "author": "chrysn",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes: https://github.com/t2trg/slipmux/issues/1\r\n\r\nThis wound up differently than in the issue -- and with a choice the specification should make.\r\n\r\nLet's treat this as a discussion starter, I'm not convinced it has everything right.",
+      "createdAt": "2025-12-12T09:48:32Z",
+      "updatedAt": "2025-12-12T14:56:13Z",
+      "baseRepository": "t2trg/slipmux",
+      "baseRefName": "main",
+      "baseRefOid": "f33ab1e61f4e3d6c20ccd15eb303f8f5f8633cf0",
+      "headRepository": "chrysn-pull-requests/slipmux-specification",
+      "headRefName": "fix-1",
+      "headRefOid": "b995c0f6af4b4276aa2c4ec197399936032183f9",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOQlcQd87U4pQW",
+          "commit": {
+            "abbreviatedOid": "4913a6a"
+          },
+          "author": "cabo",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "I think this text points out that there are different sizes at play: MTU, ISR-level buffers (or DMA!), hardware FIFOs.  We probably need to take these apart more fundamentally.  Also, there is usually additional hardware support such as an overrun flag in the UART receiver.",
+          "createdAt": "2025-12-12T12:23:09Z",
+          "updatedAt": "2025-12-12T12:41:29Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "I would add \"traditionally\", i.e. at a time when UARTs didn't have FIFOs (and were physical and not on top of USB anyway).\r\n",
+              "createdAt": "2025-12-12T12:23:09Z",
+              "updatedAt": "2025-12-12T12:41:29Z"
+            },
+            {
+              "originalPosition": 15,
+              "body": "Hmm, we generally have hardware for taking in bytes, but not for detecting frame start (I remember hacking a U(S)ART in 1988 that did that as it was more or less required for the UREP software to become a BITNET node, but that is a bit out of fashion now).",
+              "createdAt": "2025-12-12T12:24:59Z",
+              "updatedAt": "2025-12-12T12:41:29Z"
+            },
+            {
+              "originalPosition": 17,
+              "body": "Congestion control: at the packet level or at the framing level?\r\nThe latter is so much easier...\r\n(But it doesn't help that SLIP doesn't support XOFF/XON.)",
+              "createdAt": "2025-12-12T12:25:57Z",
+              "updatedAt": "2025-12-12T12:41:29Z"
+            },
+            {
+              "originalPosition": 19,
+              "body": "Hmm, last time I looked, hardware FIFOs usually were some low two-digit number of bytes, e.g., 16 bytes (Cortex-M-class CPUs), 128 bytes on ESP32, 16 or 8 bytes on a RISC-V, 32 bytes on an RP2040, 64 bytes on a newer AVR.\r\n\r\nShouldn't a Thing OS have *some* real-time capabilities?\r\n\r\nShouldn't there be another level of ring buffer in use by the ISR?\r\n",
+              "createdAt": "2025-12-12T12:28:30Z",
+              "updatedAt": "2025-12-12T12:41:29Z"
+            },
+            {
+              "originalPosition": 51,
+              "body": "```suggestion\r\nThis way, an implementation without IP support and with a CoAP server that uses a buffer which is smaller than the MTU can run interoperably,\r\n```",
+              "createdAt": "2025-12-12T12:39:20Z",
+              "updatedAt": "2025-12-12T12:41:29Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOQlcQd87U6kbP",
+          "commit": {
+            "abbreviatedOid": "4913a6a"
+          },
+          "author": "chrysn",
+          "authorAssociation": "MEMBER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-12-12T14:49:42Z",
+          "updatedAt": "2025-12-12T14:49:43Z",
+          "comments": [
+            {
+              "originalPosition": 15,
+              "body": "The RaspberryPi Pico have programmable hardware that can probably be made to do not just the END (start) detection but even the escape decoding before going into DMA. While that's an interesting exercise, I don't think we'll need to exhaust all options, just describe the problems people need to address, whose responsibility it is to address them (\"if there is no flow control, the sender may transmit at line speed\") and what some known approaches are.",
+              "createdAt": "2025-12-12T14:49:43Z",
+              "updatedAt": "2025-12-12T14:49:43Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOQlcQd87U6nhM",
+          "commit": {
+            "abbreviatedOid": "4913a6a"
+          },
+          "author": "chrysn",
+          "authorAssociation": "MEMBER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-12-12T14:52:25Z",
+          "updatedAt": "2025-12-12T14:52:25Z",
+          "comments": [
+            {
+              "originalPosition": 17,
+              "body": "I'm really thinking of upper-layer congestion control here. Like, a CoAP client will never saturate the line because it runs on N_START=1 and probing_rate=1B/s, so after an initial burst, everyone can catch up and things go lockstep.\r\n\r\n(Same with IP: The bad situation of bandwidth dropping to 10% when the loaded system could support 90% of line speed due to its processing power is barely an issue if it's just a few TCP connections over it, because those will see the initial burst of data loss and dial back their individual data rates drastically. Just please don't connect a fire hose into the capillary line).",
+              "createdAt": "2025-12-12T14:52:25Z",
+              "updatedAt": "2025-12-12T14:52:25Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOQlcQd87U6sht",
+          "commit": {
+            "abbreviatedOid": "4913a6a"
+          },
+          "author": "chrysn",
+          "authorAssociation": "MEMBER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-12-12T14:55:50Z",
+          "updatedAt": "2025-12-12T14:55:50Z",
+          "comments": [
+            {
+              "originalPosition": 19,
+              "body": "As people point out all the time about real-time, it nowhere says the time scale that RTOSs have to respond.\r\n\r\nYes, there should be a ring buffer available that gets filled at line speed, and that's the buffer I'm talking about. That one needs to be sufficiently sized (like, 2x oversized) to avoid dropping, and the ISR needs to be fast enough to take things off the UART's small buffer.\r\n\r\nIf it's an ISR, it may even do most of the SLIP decoding, and then it will always be able to switch over cleanly. But more and more I see devices prefer just DMA'ing UART into buffers, and then those buffers need to store escaped SLIP. Sadly.",
+              "createdAt": "2025-12-12T14:55:50Z",
+              "updatedAt": "2025-12-12T14:55:50Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "id": "PR_kwDOQlcQd864iWxL",
+      "title": "Implementation report for aiocoap",
+      "url": "https://github.com/t2trg/slipmux/pull/3",
+      "state": "MERGED",
+      "author": "chrysn",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [],
+      "body": "Beyond the things that gave me trouble, one aspect not covered in the document are port numbers. They don't really have a place in the transport, but setting them in a Uri-Port option might be practical, especially for when an MCU has more UARTs it fans out to, as that'd allow the main entry point to do simple port based reverse proxying (with barely any real need to do more than forwarding messages, as long as it does not issue requests itself downstream), and then they need support in the URI. This might be easier though when going with the more generic coap:// scheme as per my transport-indication recommendations.",
+      "createdAt": "2025-12-12T10:12:44Z",
+      "updatedAt": "2025-12-12T14:27:31Z",
+      "baseRepository": "t2trg/slipmux",
+      "baseRefName": "main",
+      "baseRefOid": "f33ab1e61f4e3d6c20ccd15eb303f8f5f8633cf0",
+      "headRepository": "chrysn-pull-requests/slipmux-specification",
+      "headRefName": "impl-aiocoap",
+      "headRefOid": "1eb482728b5579d01458815676b69194fa266c7b",
+      "closedAt": "2025-12-12T14:24:35Z",
+      "mergedAt": "2025-12-12T14:24:35Z",
+      "mergedBy": "cabo",
+      "mergeCommit": {
+        "oid": "70c2cfd976e1fead6fb48335074d74963e52d83c"
+      },
+      "comments": [
+        {
+          "author": "cabo",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Is it the hostname or the port that you would use for locally selecting UART lines?\r\n",
+          "createdAt": "2025-12-12T12:19:21Z",
+          "updatedAt": "2025-12-12T12:19:21Z"
+        },
+        {
+          "author": "chrysn",
+          "authorAssociation": "MEMBER",
+          "body": "> hostname or port\r\n\r\nEither would be viable, and both probably need some attention. I just think that it's a bit easier for a very constrained \"border proxy\" to manage its back-ends by numbers (counting up, discarding leading zeros or even using over-long CoAP uint options) than coming up with names (base-32'ing a count or otherwise filling the allowed byte values of a UTF-8 string). And especially when people are [asking questions](https://chaos.social/@osterwood/115704516893589042) about using this on a shared RS485 bus, where hostnames would be the more natural places for participant identifiers.",
+          "createdAt": "2025-12-12T14:27:31Z",
+          "updatedAt": "2025-12-12T14:27:31Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOQlcQd87U4nDp",
+          "commit": {
+            "abbreviatedOid": "e11a370"
+          },
+          "author": "cabo",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-12-12T12:20:08Z",
+          "updatedAt": "2025-12-12T12:21:12Z",
+          "comments": [
+            {
+              "originalPosition": 7,
+              "body": "```suggestion\r\nthe aiocoap library (MIT License, Python language, for capable systems):\r\n```\r\n\r\n(Terminology from 7228bis)",
+              "createdAt": "2025-12-12T12:20:08Z",
+              "updatedAt": "2025-12-12T12:21:12Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
