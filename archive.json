@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-12-14T01:03:58.772104+00:00",
+  "timestamp": "2025-12-21T01:03:37.189463+00:00",
   "repo": "t2trg/slipmux",
   "labels": [
     {
@@ -62,9 +62,17 @@
       "labels": [],
       "body": "I though this would be easy to address in <https://mailarchive.ietf.org/arch/msg/t2trg/7b91fiM_1628Jcxb0OVcuNoZf5w>; quoting myself from there:\n\n> One thing I discovered (from Wikipedia[3] and Keil docs[4]; RFC1055 is\nsilent on the topic, and so is the draft) is that it really only works\nwell with hardware flow control enabled.\n>\n> In RIOT OS and Ariel OS, I work with many systems that have serial\nconnectivity to the host through dedicated chips or just on-board\ndebuggers (besides those that have own USB stack, but on those I'd\nrather use USB Ethernet), and contrary to my expectations of quality, a\ngreat many don't have the flow control pins wired (even though hardware\nsupport for them is generally good these days); sampling Ariel OS\nboards[5] by group, no flow control was found in the BBC micro:bit,\nESP32-C6-DevKitC-1 and the ST NUCLEO-C031C6, whereas the nRF9151-DK does\nhave RTS/CTS wired.\n>\n> I don't have a strong opinion on whether this document should have\nnormative statements on flow control, but something like this would have\nhelped me as an imlementer:\n>\n> > As SLIP is preferably used with hardware flow control (RTS/CTS or\n> CLOCAL), and has no provisions for escaping software flow control,\n> implementations on devices without available hardware flow control\n> need to keep up with receiving data at line speed with sufficient\n> buffering to receive at least a full single transfer (eg. a minimal\n> MTU sized IPv6 packet plus any escape overhead), rather than relying\n> on the peer to transmit with interruptions or to just transmit small\n> messages. For configuration messages, implementers can get away with a\n> smaller buffer, but then need to ensure that they can process enough\n> of an incompletely received message to send a 4.13 Request Entity Too\n> Large with an appropriate Size1 option.\n>\n> (Or leaving the \"For configuration messages\" out -- I know I have a\ntendency to insert provisions for optimizations that might distract more\nthan help.)\n\nHaving started to write that into a PR, along with very simplistic tests, I found this to be more complex. I still think that the issue should be addressed, but now it's more a matter of whether things are operating in a buffered or cut-through mode, and then an implementation that should work under stress without hardware flow control needs to go through some yet unknown decision tree that involves whether or not all upper-layer protocols are adequately flow-controlled on their own to never saturate the link, whether the device is actually buffering anything at all (I expect most of usage to be store-and-forward, but cut-through processing might be feasible too in some cases, like in CoAP w/o security, or when forwarding traffic), and whether decoding happens at line speed into a decoded buffer (then the decoder can skip ahead if the buffer is unavailable) or whether undecoded data is stored (in which case the ability to store an MTU under any conditions effectively means it can store around 1.9x of an average packet, which may lead to acceptable recovery of almost as many frames as can be processed at decoding speed when that is below line speed, where every time after processing, the decoder has to look for a start again).",
       "createdAt": "2025-12-10T11:28:22Z",
-      "updatedAt": "2025-12-10T11:28:36Z",
+      "updatedAt": "2025-12-18T10:32:08Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "Teufelchen1",
+          "authorAssociation": "NONE",
+          "body": "Not contradicting this (nor the PR) but just to highlight it: Let's not build specific hardware requirements into slipmux. I often use slipmux via an unix socket, which naturally does not have flow control, XON/XOFF nor overflow flags. Would be a shame to loose the flexibility to say \"you can speak slipmux over anything that streams data\". ",
+          "createdAt": "2025-12-18T10:32:08Z",
+          "updatedAt": "2025-12-18T10:32:08Z"
+        }
+      ]
     },
     {
       "number": 4,
@@ -78,9 +86,17 @@
       "labels": [],
       "body": "I think that the term \"Configuration\" is not too helpful for naming the frames. Yes, configuring the peer over CoAP is *some* thing CoAP-over-SLIP can do (esp. when working with legacy IP that needs IP addresses set up before you can talk), but I think it's just one of many points.\n\nThe document would read more easily if Configuration Frames were just called CoAP frames.",
       "createdAt": "2025-12-12T14:21:59Z",
-      "updatedAt": "2025-12-12T14:21:59Z",
+      "updatedAt": "2025-12-18T10:35:27Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "Teufelchen1",
+          "authorAssociation": "NONE",
+          "body": "Yes please. Having implemented slipmux in RIOT, I have first hand experience how difficult it is to correctly name things in the context of slipmux.",
+          "createdAt": "2025-12-18T10:35:27Z",
+          "updatedAt": "2025-12-18T10:35:27Z"
+        }
+      ]
     },
     {
       "number": 5,
@@ -95,6 +111,22 @@
       "body": "In serial communication, a popular bus is RS485, which is a half-duplex shared bus that often looks like any other serial connection.\n\nI think that doing this is, to some extent, feasible, and practical in some situations; whether it is worth adding to this document is unsure (so let's discuss here).\n\nThere is a simple case that I think works particularly well: If\n\n* most of the traffic is CoAP (probably impractical for IP, but maybe get some diagnostic output, especially around errors), and\n* there is only one client, and\n* the servers always use piggy-backed responses and no non-traditional responses such as observation\n\nthen the system would be largely free of collisions, especially if there is a bit tighter agreement on how long after a request it is permissible to send a response, and could already be used with current implementations. All the client needs to do is send CONs and leave NSTART=1.\n\nServers could distinguish whether a request is for them or not by looking at a Uri-Host option, and even group messages where some Uri-Host value serves as a group name is doable thanks to Leisure.\n\nSetups with non-traditional or separate responses would need to either \"just\" use little enough traffic that collisions are not an issue, or might involve some polling: The single client knows which servers it is expecting responses (of either kind) from, and can poll it. Sadly, a CoAP ping is not *quite* sufficient because it can't carry Uri-Host, but maybe a Signaling message would do (maybe that Ping, and similar to Custody, a pong can say \"I'm here and will still send something\", or \"I'm here and I've said everything\", or just a CON message that is just pending).\n\nIf the coordinator regularly polls all participants, they can even become clients, but at that point, things get complex, and this should be simple -- at some point it's probably better to just run 6lobac (RFC8163).",
       "createdAt": "2025-12-12T14:46:43Z",
       "updatedAt": "2025-12-12T14:46:49Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 6,
+      "id": "I_kwDOQlcQd87fFORN",
+      "title": "Refine naming of various data structures",
+      "url": "https://github.com/t2trg/slipmux/issues/6",
+      "state": "OPEN",
+      "author": "Teufelchen1",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "Hei \ud83d\udc33 ,\n\nthis is a generalization of #4\nCertain naming within the draft is not or only loosely defined. Having [written a report on slipmux](https://www.inet.haw-hamburg.de/teaching/ss-2025/project-class/prj1_bennet_hattesen.pdf), I had to use, and come up with, precise wording to describe aspects and properties of slipmux. There's no need to read the whole report but I do recommend to take a look at page 1 \"Abbreviations\".\n\nHere are some areas from the top of my head where we could improve on:\n\n1. As mentioned, \"configuration\" -> \"CoAP transfer\" seems like a good idea.\n2. The \"Packet transfer\" is easily confused with \"CoAP packet transfer\" or even raise the misleading idea that \"packet\" is an alias for \"frame\". Maybe rename it to \"IP packet transfer\", \"IP transfer\" or similar.\n3. It might be worth giving actual names to the start bytes (or all interesting bytes). While not useful inside the running text of the draft, it would serve all outside discussions and implementations, to be able to be precise on what they are referring to. E.g. \"Diagnostic messages start with `0x0a` byte. This start byte is called `DIAGNOSTIC_START`\"\n4. I named the concrete instance of one of the three possible frames the \"Frame Type (FT)\". This is only implicitly written in the draft and only used once in `8. IANA Considerations`. Having this name defined clearly helps a lot when talking about... well frame types.\n5. Differentiate the state of a given message. In slipmux, any message is in one of three states:\n      a. The plain message without any additions or constraints\n      b. The same message but correctly encoded for slipmux (with start/end bytes, with escaping, with CRC i.a.)\n      c. The same message on the wire, being transmitted and/or received\n    In my report I called a message in state a. \"message\" (e.g. \"Configuration message\"). For state b. I used \"Frame\" (e.g. \"Configuration Frame\"). This way any reader knows, that when ever I talk about \"a frame\", I was referring to correctly encoded bytes forming a valid slipmux frame. And for c. I coined \"transfer\". \nDifferentiating between these states is particularly useful in the context of implementations. The user always provides and receives \"messages\". A slipmux de-/encoder always consumes/produces \"frames\". The uart is busy with a  \"transfer\".\n\n",
+      "createdAt": "2025-12-18T11:24:21Z",
+      "updatedAt": "2025-12-18T11:24:21Z",
       "closedAt": null,
       "comments": []
     }
@@ -112,7 +144,7 @@
       "labels": [],
       "body": "Closes: https://github.com/t2trg/slipmux/issues/1\r\n\r\nThis wound up differently than in the issue -- and with a choice the specification should make.\r\n\r\nLet's treat this as a discussion starter, I'm not convinced it has everything right.",
       "createdAt": "2025-12-12T09:48:32Z",
-      "updatedAt": "2025-12-12T14:56:13Z",
+      "updatedAt": "2025-12-18T10:46:07Z",
       "baseRepository": "t2trg/slipmux",
       "baseRefName": "main",
       "baseRefOid": "f33ab1e61f4e3d6c20ccd15eb303f8f5f8633cf0",
@@ -226,6 +258,26 @@
               "body": "As people point out all the time about real-time, it nowhere says the time scale that RTOSs have to respond.\r\n\r\nYes, there should be a ring buffer available that gets filled at line speed, and that's the buffer I'm talking about. That one needs to be sufficiently sized (like, 2x oversized) to avoid dropping, and the ISR needs to be fast enough to take things off the UART's small buffer.\r\n\r\nIf it's an ISR, it may even do most of the SLIP decoding, and then it will always be able to switch over cleanly. But more and more I see devices prefer just DMA'ing UART into buffers, and then those buffers need to store escaped SLIP. Sadly.",
               "createdAt": "2025-12-12T14:55:50Z",
               "updatedAt": "2025-12-12T14:55:50Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOQlcQd87WGyW7",
+          "commit": {
+            "abbreviatedOid": "b995c0f"
+          },
+          "author": "AnnsAnns",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-12-18T10:46:06Z",
+          "updatedAt": "2025-12-18T10:46:07Z",
+          "comments": [
+            {
+              "originalPosition": 15,
+              "body": "The Pico 1/2 PIO should indeed be able to do that, esp. the examples mentioned by you :)",
+              "createdAt": "2025-12-18T10:46:06Z",
+              "updatedAt": "2025-12-18T10:46:07Z"
             }
           ]
         }
